@@ -97,6 +97,7 @@ public final class TrackedWorld implements Block.Getter, Block.Setter {
 
     @Override
     public @UnknownNullability Block getBlock(int x, int y, int z, @NotNull Block.Getter.Condition condition) {
+        if(y < dimensionType.minY() || y >= dimensionType.maxY()) return Block.AIR;
         final int chunkX = x >> 4;
         final int chunkZ = z >> 4;
         final Chunk chunk = chunks.computeIfAbsent(chunkIndex(chunkX, chunkZ), i -> new Chunk(chunkX, chunkZ));

@@ -170,6 +170,7 @@ public final class InventoryHolder {
 
     public void consume(ClientCreativeInventoryActionPacket packet) {
         final int internalSlot = PlayerInventoryUtils.convertPlayerInventorySlot(packet.slot(), PlayerInventoryUtils.OFFSET);
+        if (internalSlot < 0) return;
         this.inventory[internalSlot] = packet.item();
         if (isEquipmentSlot(internalSlot)) {
             this.localBroadcastConsumer.accept(equipmentPacket());
@@ -195,7 +196,8 @@ public final class InventoryHolder {
 
     private boolean isEquipmentSlot(int slot) {
         return switch (slot) {
-            case PlayerInventoryUtils.HELMET_SLOT, PlayerInventoryUtils.CHESTPLATE_SLOT, PlayerInventoryUtils.LEGGINGS_SLOT, PlayerInventoryUtils.BOOTS_SLOT,
+            case PlayerInventoryUtils.HELMET_SLOT, PlayerInventoryUtils.CHESTPLATE_SLOT,
+                 PlayerInventoryUtils.LEGGINGS_SLOT, PlayerInventoryUtils.BOOTS_SLOT,
                  PlayerInventoryUtils.OFFHAND_SLOT -> true;
             default -> slot == heldSlot;
         };
