@@ -21,8 +21,8 @@ import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.*;
 
-import static net.minestom.server.coordinate.CoordConversionUtils.blockIndex;
-import static net.minestom.server.coordinate.CoordConversionUtils.chunkIndex;
+import static net.minestom.server.coordinate.CoordConversion.chunkBlockIndex;
+import static net.minestom.server.coordinate.CoordConversion.chunkIndex;
 import static net.minestom.server.network.NetworkBuffer.SHORT;
 
 /**
@@ -88,7 +88,7 @@ public final class TrackedWorld implements Block.Getter, Block.Setter {
         final int chunkX = x >> 4;
         final int chunkZ = z >> 4;
         final Chunk chunk = chunks.computeIfAbsent(chunkIndex(chunkX, chunkZ), i -> new Chunk(chunkX, chunkZ));
-        final int blockIndex = blockIndex(x, y, z);
+        final int blockIndex = chunkBlockIndex(x, y, z);
         if (block.registry().isBlockEntity() || block.nbt() != null) chunk.blockEntities.put(blockIndex, block);
         else chunk.blockEntities.remove(blockIndex);
         final Section section = chunk.sections[(y >> 4) - minSection];

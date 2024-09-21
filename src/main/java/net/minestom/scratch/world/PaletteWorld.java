@@ -22,7 +22,7 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 
-import static net.minestom.server.coordinate.CoordConversionUtils.chunkIndex;
+import static net.minestom.server.coordinate.CoordConversion.chunkIndex;
 import static net.minestom.server.network.NetworkBuffer.SHORT;
 
 /**

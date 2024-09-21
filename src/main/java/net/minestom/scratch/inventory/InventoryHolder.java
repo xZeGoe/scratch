@@ -11,7 +11,7 @@ import net.minestom.server.network.packet.server.play.CloseWindowPacket;
 import net.minestom.server.network.packet.server.play.EntityEquipmentPacket;
 import net.minestom.server.network.packet.server.play.OpenWindowPacket;
 import net.minestom.server.network.packet.server.play.WindowItemsPacket;
-import net.minestom.server.utils.SlotUtils;
+import net.minestom.server.utils.inventory.PlayerInventoryUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -69,18 +69,18 @@ public final class InventoryHolder {
     public int handSlot(PlayerHand hand) {
         return switch (hand) {
             case MAIN -> heldSlot;
-            case OFF -> SlotUtils.OFFHAND_SLOT;
+            case OFF -> PlayerInventoryUtils.OFFHAND_SLOT;
         };
     }
 
     public Map<EquipmentSlot, ItemStack> equipments() {
         return Map.of(
                 EquipmentSlot.MAIN_HAND, inventory[heldSlot],
-                EquipmentSlot.OFF_HAND, inventory[SlotUtils.OFFHAND_SLOT],
-                EquipmentSlot.HELMET, inventory[SlotUtils.HELMET_SLOT],
-                EquipmentSlot.CHESTPLATE, inventory[SlotUtils.CHESTPLATE_SLOT],
-                EquipmentSlot.LEGGINGS, inventory[SlotUtils.LEGGINGS_SLOT],
-                EquipmentSlot.BOOTS, inventory[SlotUtils.BOOTS_SLOT]
+                EquipmentSlot.OFF_HAND, inventory[PlayerInventoryUtils.OFFHAND_SLOT],
+                EquipmentSlot.HELMET, inventory[PlayerInventoryUtils.HELMET_SLOT],
+                EquipmentSlot.CHESTPLATE, inventory[PlayerInventoryUtils.CHESTPLATE_SLOT],
+                EquipmentSlot.LEGGINGS, inventory[PlayerInventoryUtils.LEGGINGS_SLOT],
+                EquipmentSlot.BOOTS, inventory[PlayerInventoryUtils.BOOTS_SLOT]
         );
     }
 
@@ -98,7 +98,7 @@ public final class InventoryHolder {
     public WindowItemsPacket itemsPacket() {
         List<ItemStack> items = new ArrayList<>();
         for (int i = 0; i < inventory.length; i++) {
-            final int internalSlot = SlotUtils.convertPlayerInventorySlot(i, SlotUtils.OFFSET);
+            final int internalSlot = PlayerInventoryUtils.convertPlayerInventorySlot(i, PlayerInventoryUtils.OFFSET);
             items.add(inventory[internalSlot]);
         }
         return new WindowItemsPacket((byte) 0, 0, items, cursor);
@@ -128,12 +128,12 @@ public final class InventoryHolder {
                     updateContainer = true;
                 } else {
                     // Click in player inventory
-                    final int internalSlot = SlotUtils.convertSlot(protocolSlot, containerSize);
+                    final int internalSlot = PlayerInventoryUtils.convertSlot(protocolSlot, containerSize);
                     this.inventory[internalSlot] = changedSlot.item();
                 }
             } else {
                 // No container open
-                final int internalSlot = SlotUtils.convertPlayerInventorySlot(protocolSlot, SlotUtils.OFFSET);
+                final int internalSlot = PlayerInventoryUtils.convertPlayerInventorySlot(protocolSlot, PlayerInventoryUtils.OFFSET);
                 this.inventory[internalSlot] = changedSlot.item();
                 if (isEquipmentSlot(internalSlot)) {
                     this.localBroadcastConsumer.accept(equipmentPacket());
@@ -153,7 +153,7 @@ public final class InventoryHolder {
     public void consume(ClientUseItemPacket packet) {
         final int slot = switch (packet.hand()) {
             case MAIN -> heldSlot;
-            case OFF -> SlotUtils.OFFHAND_SLOT;
+            case OFF -> PlayerInventoryUtils.OFFHAND_SLOT;
         };
 
         final ItemStack item = inventory[slot];
@@ -169,7 +169,7 @@ public final class InventoryHolder {
     }
 
     public void consume(ClientCreativeInventoryActionPacket packet) {
-        final int internalSlot = SlotUtils.convertPlayerInventorySlot(packet.slot(), SlotUtils.OFFSET);
+        final int internalSlot = PlayerInventoryUtils.convertPlayerInventorySlot(packet.slot(), PlayerInventoryUtils.OFFSET);
         this.inventory[internalSlot] = packet.item();
         if (isEquipmentSlot(internalSlot)) {
             this.localBroadcastConsumer.accept(equipmentPacket());
@@ -185,18 +185,18 @@ public final class InventoryHolder {
     }
 
     private boolean isCraftingSlot(int slot) {
-        return slot == SlotUtils.CRAFT_SLOT_1 || slot == SlotUtils.CRAFT_SLOT_2 ||
-                slot == SlotUtils.CRAFT_SLOT_3 || slot == SlotUtils.CRAFT_SLOT_4;
+        return slot == PlayerInventoryUtils.CRAFT_SLOT_1 || slot == PlayerInventoryUtils.CRAFT_SLOT_2 ||
+                slot == PlayerInventoryUtils.CRAFT_SLOT_3 || slot == PlayerInventoryUtils.CRAFT_SLOT_4;
     }
 
     private boolean isHandSlot(int slot) {
-        return slot == heldSlot || slot == SlotUtils.OFFHAND_SLOT;
+        return slot == heldSlot || slot == PlayerInventoryUtils.OFFHAND_SLOT;
     }
 
     private boolean isEquipmentSlot(int slot) {
         return switch (slot) {
-            case SlotUtils.HELMET_SLOT, SlotUtils.CHESTPLATE_SLOT, SlotUtils.LEGGINGS_SLOT, SlotUtils.BOOTS_SLOT,
-                 SlotUtils.OFFHAND_SLOT -> true;
+            case PlayerInventoryUtils.HELMET_SLOT, PlayerInventoryUtils.CHESTPLATE_SLOT, PlayerInventoryUtils.LEGGINGS_SLOT, PlayerInventoryUtils.BOOTS_SLOT,
+                 PlayerInventoryUtils.OFFHAND_SLOT -> true;
             default -> slot == heldSlot;
         };
     }
@@ -204,11 +204,12 @@ public final class InventoryHolder {
     private int equipmentSlot(EquipmentSlot equipmentSlot) {
         return switch (equipmentSlot) {
             case MAIN_HAND -> heldSlot;
-            case OFF_HAND -> SlotUtils.OFFHAND_SLOT;
-            case HELMET -> SlotUtils.HELMET_SLOT;
-            case CHESTPLATE -> SlotUtils.CHESTPLATE_SLOT;
-            case LEGGINGS -> SlotUtils.LEGGINGS_SLOT;
-            case BOOTS -> SlotUtils.BOOTS_SLOT;
+            case OFF_HAND -> PlayerInventoryUtils.OFFHAND_SLOT;
+            case HELMET -> PlayerInventoryUtils.HELMET_SLOT;
+            case CHESTPLATE -> PlayerInventoryUtils.CHESTPLATE_SLOT;
+            case LEGGINGS -> PlayerInventoryUtils.LEGGINGS_SLOT;
+            case BOOTS -> PlayerInventoryUtils.BOOTS_SLOT;
+            case BODY -> equipmentSlot.armorSlot();
         };
     }
 

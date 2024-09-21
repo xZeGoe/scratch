@@ -14,7 +14,7 @@ import net.minestom.server.ServerFlag;
 import net.minestom.server.collision.Aerodynamics;
 import net.minestom.server.collision.PhysicsResult;
 import net.minestom.server.collision.PhysicsUtils;
-import net.minestom.server.coordinate.ChunkRangeUtils;
+import net.minestom.server.coordinate.ChunkRange;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
@@ -39,6 +39,7 @@ import net.minestom.server.network.packet.server.login.LoginSuccessPacket;
 import net.minestom.server.network.packet.server.play.*;
 import net.minestom.server.network.packet.server.play.data.WorldPos;
 import net.minestom.server.network.packet.server.status.ResponsePacket;
+import net.minestom.server.network.player.GameProfile;
 import net.minestom.server.world.DimensionType;
 
 import java.io.IOException;
@@ -248,7 +249,8 @@ public final class PlayerSyncTemplate {
                 case ClientLoginStartPacket startPacket -> {
                     // TODO: remove random UUID, currently necessary to test with multiple players
                     this.playerInfo = new PlayerInfo(this, startPacket.username(), UUID.randomUUID());
-                    this.networkContext.write(new LoginSuccessPacket(startPacket.profileId(), startPacket.username(), 0, false));
+                    GameProfile gameProfile = new GameProfile(playerInfo.uuid(), playerInfo.username());
+                    this.networkContext.write(new LoginSuccessPacket(gameProfile, false));
                 }
                 case ClientLoginAcknowledgedPacket ignored -> {
                     this.networkContext.write(ScratchRegistryTools.REGISTRY_PACKETS);
@@ -482,7 +484,7 @@ public final class PlayerSyncTemplate {
 
             packets.add(new UpdateViewDistancePacket(VIEW_DISTANCE));
             packets.add(new UpdateViewPositionPacket(position.chunkX(), position.chunkZ()));
-            ChunkRangeUtils.forChunksInRange(position.chunkX(), position.chunkZ(), VIEW_DISTANCE,
+            ChunkRange.chunksInRange(position.chunkX(), position.chunkZ(), VIEW_DISTANCE,
                     (x, z) -> packets.add(blockHolder.generatePacket(x, z)));
 
             packets.add(new ChangeGameStatePacket(ChangeGameStatePacket.Reason.LEVEL_CHUNKS_LOAD_START, 0f));

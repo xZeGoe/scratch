@@ -19,7 +19,7 @@ import net.minestom.server.collision.Aerodynamics;
 import net.minestom.server.collision.PhysicsResult;
 import net.minestom.server.collision.PhysicsUtils;
 import net.minestom.server.component.DataComponentMap;
-import net.minestom.server.coordinate.ChunkRangeUtils;
+import net.minestom.server.coordinate.ChunkRange;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
@@ -54,11 +54,12 @@ import net.minestom.server.network.packet.server.login.LoginSuccessPacket;
 import net.minestom.server.network.packet.server.play.*;
 import net.minestom.server.network.packet.server.play.data.WorldPos;
 import net.minestom.server.network.packet.server.status.ResponsePacket;
+import net.minestom.server.network.player.GameProfile;
 import net.minestom.server.recipe.Recipe;
 import net.minestom.server.recipe.RecipeCategory;
 import net.minestom.server.recipe.RecipeCompute;
 import net.minestom.server.registry.DynamicRegistry;
-import net.minestom.server.utils.SlotUtils;
+import net.minestom.server.utils.inventory.PlayerInventoryUtils;
 import net.minestom.server.world.DimensionType;
 import org.jctools.queues.SpscUnboundedArrayQueue;
 
@@ -319,7 +320,8 @@ public final class SurvivalTemplate {
                 case ClientLoginStartPacket startPacket -> {
                     // TODO: remove random UUID, currently necessary to test with multiple players
                     this.playerInfo = new PlayerInfo(this, startPacket.username(), UUID.randomUUID());
-                    this.networkContext.write(new LoginSuccessPacket(startPacket.profileId(), startPacket.username(), 0, false));
+                    GameProfile gameProfile = new GameProfile(playerInfo.uuid(), playerInfo.username());
+                    this.networkContext.write(new LoginSuccessPacket(gameProfile, false));
                 }
                 case ClientLoginAcknowledgedPacket ignored -> {
                     this.networkContext.write(ScratchRegistryTools.REGISTRY_PACKETS);
@@ -737,7 +739,7 @@ public final class SurvivalTemplate {
                             try {
                                 final GameMode newGameMode = GameMode.valueOf(s.toUpperCase(Locale.ROOT));
                                 this.gameMode = newGameMode;
-                                sendPacket(new ChangeGameStatePacket(ChangeGameStatePacket.Reason.CHANGE_GAMEMODE, newGameMode.id()));
+                                sendPacket(new ChangeGameStatePacket(ChangeGameStatePacket.Reason.CHANGE_GAMEMODE, newGameMode.ordinal()));
                                 sendMessage(Component.text("GameMode: " + s));
                             } catch (IllegalArgumentException e) {
                                 sendMessage(Component.text("Invalid GameMode"));
@@ -902,7 +904,7 @@ public final class SurvivalTemplate {
                     false, false, null, 0, (byte) RespawnPacket.COPY_METADATA);
             sendPacket(respawnPacket);
             sendPacket(new ChangeGameStatePacket(ChangeGameStatePacket.Reason.LEVEL_CHUNKS_LOAD_START, 0));
-            ChunkRangeUtils.forChunksInRange(position.chunkX(), position.chunkZ(), VIEW_DISTANCE,
+            ChunkRange.chunksInRange(position.chunkX(), position.chunkZ(), VIEW_DISTANCE,
                     (x, z) -> sendPacket(newWorld.blockHolder.generatePacket(x, z)));
             sendPacket(new PlayerPositionAndLookPacket(position, (byte) 0, 0));
         }
@@ -941,7 +943,7 @@ public final class SurvivalTemplate {
 
             packets.add(new UpdateViewDistancePacket(VIEW_DISTANCE));
             packets.add(new UpdateViewPositionPacket(position.chunkX(), position.chunkZ()));
-            ChunkRangeUtils.forChunksInRange(position.chunkX(), position.chunkZ(), VIEW_DISTANCE,
+            ChunkRange.chunksInRange(position.chunkX(), position.chunkZ(), VIEW_DISTANCE,
                     (x, z) -> packets.add(blockHolder.generatePacket(x, z)));
 
             packets.add(new ChangeGameStatePacket(ChangeGameStatePacket.Reason.LEVEL_CHUNKS_LOAD_START, 0f));
@@ -970,15 +972,15 @@ public final class SurvivalTemplate {
                         var openContainer = inventoryHolder.openContainer();
                         if (openContainer == null) {
                             ItemStack[] craftItems = new ItemStack[]{
-                                    inventoryHolder.getItem(SlotUtils.CRAFT_SLOT_1),
-                                    inventoryHolder.getItem(SlotUtils.CRAFT_SLOT_2),
-                                    inventoryHolder.getItem(SlotUtils.CRAFT_SLOT_3),
-                                    inventoryHolder.getItem(SlotUtils.CRAFT_SLOT_4
+                                    inventoryHolder.getItem(PlayerInventoryUtils.CRAFT_SLOT_1),
+                                    inventoryHolder.getItem(PlayerInventoryUtils.CRAFT_SLOT_2),
+                                    inventoryHolder.getItem(PlayerInventoryUtils.CRAFT_SLOT_3),
+                                    inventoryHolder.getItem(PlayerInventoryUtils.CRAFT_SLOT_4
                                     )};
                             final RecipeCompute.CraftResult result = RecipeCompute.searchCraft(recipes, 2, 2, craftItems);
                             final ItemStack craftItem = result != null ? result.item() : ItemStack.AIR;
-                            inventoryHolder.setItem(SlotUtils.CRAFT_RESULT, craftItem);
-                            sendPacket(new SetSlotPacket((byte) 0, 0, (short) SlotUtils.convertToPacketSlot(SlotUtils.CRAFT_RESULT), craftItem));
+                            inventoryHolder.setItem(PlayerInventoryUtils.CRAFT_RESULT, craftItem);
+                            sendPacket(new SetSlotPacket((byte) 0, 0, (short) PlayerInventoryUtils.convertToPacketSlot(PlayerInventoryUtils.CRAFT_RESULT), craftItem));
                         } else if (openContainer.type() == InventoryType.CRAFTING) {
                             ItemStack[] craftItems = new ItemStack[3 * 3];
                             for (int i = 0; i < openContainer.inventory().length - 1; i++) {
@@ -998,7 +1000,7 @@ public final class SurvivalTemplate {
                         this.inventoryHolder.consume(useItemPacket);
                         final int slot = switch (useItemPacket.hand()) {
                             case MAIN -> inventoryHolder.heldSlot();
-                            case OFF -> SlotUtils.OFFHAND_SLOT;
+                            case OFF -> PlayerInventoryUtils.OFFHAND_SLOT;
                         };
                         this.healthHandler.startEating(slot, inventoryHolder.getHandItem(useItemPacket.hand()));
                     }

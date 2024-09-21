@@ -90,9 +90,9 @@ public sealed interface NetworkContext {
                     readBuffer.resize(failure.requiredCapacity());
                 }
                 case PacketReading.Result.Success<ClientPacket> success -> {
-                    for (ClientPacket packet : success.packets()) {
-                        stateRef.set(success.newState());
-                        consumer.accept(packet);
+                    for (PacketReading.ParsedPacket<ClientPacket> packet : success.packets()) {
+                        stateRef.set(packet.nextState());
+                        consumer.accept(packet.packet());
                     }
                     readBuffer.compact();
                 }

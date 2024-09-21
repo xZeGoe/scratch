@@ -1,7 +1,7 @@
 package net.minestom.scratch.listener;
 
 import net.kyori.adventure.text.Component;
-import net.minestom.server.coordinate.ChunkRangeUtils;
+import net.minestom.server.coordinate.ChunkRange;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.instance.block.BlockFace;
@@ -11,7 +11,7 @@ import net.minestom.server.network.packet.client.play.*;
 import net.minestom.server.network.packet.server.ServerPacket;
 import net.minestom.server.network.packet.server.play.*;
 import net.minestom.server.utils.Direction;
-import net.minestom.server.utils.SlotUtils;
+import net.minestom.server.utils.inventory.PlayerInventoryUtils;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -82,7 +82,7 @@ public interface ScratchFeature extends Consumer<ClientPacket> {
             final int newChunkX = position.chunkX();
             final int newChunkZ = position.chunkZ();
             mapping.sendPacket(new UpdateViewPositionPacket(newChunkX, newChunkZ));
-            ChunkRangeUtils.forDifferingChunksInRange(newChunkX, newChunkZ, oldChunkX, oldChunkZ,
+            ChunkRange.chunksInRangeDiffering(newChunkX, newChunkZ, oldChunkX, oldChunkZ,
                     mapping.viewDistance(),
                     (x, z) -> mapping.sendPacket(mapping.chunkPacket(x, z)),
                     (x, z) -> mapping.sendPacket(new UnloadChunkPacket(x, z)));
@@ -159,7 +159,7 @@ public interface ScratchFeature extends Consumer<ClientPacket> {
                     List<ClientClickWindowPacket.ChangedSlot> changedSlots, ItemStack clickedItem
             )) {
                 for (ClientClickWindowPacket.ChangedSlot changedSlot : changedSlots) {
-                    final int internalSlot = SlotUtils.convertPlayerInventorySlot(changedSlot.slot(), SlotUtils.OFFSET);
+                    final int internalSlot = PlayerInventoryUtils.convertPlayerInventorySlot(changedSlot.slot(), PlayerInventoryUtils.OFFSET);
                     mapping.setPlayerItem(internalSlot, changedSlot.item());
                 }
                 mapping.setCursorItem(clickedItem);

@@ -3,8 +3,8 @@ package net.minestom.scratch.interest;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.minestom.server.coordinate.ChunkRangeUtils;
-import net.minestom.server.coordinate.CoordConversionUtils;
+import net.minestom.server.coordinate.ChunkRange;
+import net.minestom.server.coordinate.CoordConversion;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.network.packet.server.ServerPacket;
 
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
-import static net.minestom.server.coordinate.CoordConversionUtils.chunkIndex;
+import static net.minestom.server.coordinate.CoordConversion.chunkIndex;
 
 public final class Broadcast {
     private final List<ServerPacket.Play> broadcastPackets = new ArrayList<>();
@@ -110,7 +110,7 @@ public final class Broadcast {
             for (int entryId : entriesChanged) {
                 Entry entry = entries.get(entryId);
                 if (entry == null) continue;
-                ChunkRangeUtils.ChunkConsumer newCallback = (x, z) -> {
+                ChunkRange.ChunkConsumer newCallback = (x, z) -> {
                     Chunk chunk = chunks.computeIfAbsent(chunkIndex(x, z), Chunk::new);
                     for (int viewerId : entry.receiver ? chunk.viewers : chunk.viewersReceivers) {
                         if (viewerId == entryId) continue;
@@ -127,7 +127,7 @@ public final class Broadcast {
                     }
                     if (entry.receiver) chunk.receivers.add(entryId);
                 };
-                ChunkRangeUtils.ChunkConsumer oldCallback = (x, z) -> {
+                ChunkRange.ChunkConsumer oldCallback = (x, z) -> {
                     final Chunk chunk = chunks.get(chunkIndex(x, z));
                     if (chunk == null) return;
                     for (int viewerId : entry.receiver ? chunk.viewers : chunk.viewersReceivers) {
@@ -147,14 +147,14 @@ public final class Broadcast {
                 };
                 if (entry.initialized) {
                     if (entry.alive) {
-                        ChunkRangeUtils.forDifferingChunksInRange(entry.newChunkX, entry.newChunkZ,
+                        ChunkRange.chunksInRangeDiffering(entry.newChunkX, entry.newChunkZ,
                                 entry.oldChunkX, entry.oldChunkZ,
                                 viewDistance, newCallback, oldCallback);
                     } else {
-                        ChunkRangeUtils.forChunksInRange(entry.newChunkX, entry.newChunkZ, viewDistance, oldCallback);
+                        ChunkRange.chunksInRange(entry.newChunkX, entry.newChunkZ, viewDistance, oldCallback);
                     }
                 } else {
-                    ChunkRangeUtils.forChunksInRange(entry.newChunkX, entry.newChunkZ, viewDistance, newCallback);
+                    ChunkRange.chunksInRange(entry.newChunkX, entry.newChunkZ, viewDistance, newCallback);
                     entry.initialized = true;
                 }
                 entry.oldChunkX = entry.newChunkX;
@@ -249,8 +249,8 @@ public final class Broadcast {
             private final PacketStore broadcaster = new PacketStore();
 
             public Chunk(long index) {
-                this.x = CoordConversionUtils.chunkIndexToChunkX(index);
-                this.z = CoordConversionUtils.chunkIndexToChunkZ(index);
+                this.x = CoordConversion.chunkIndexGetX(index);
+                this.z = CoordConversion.chunkIndexGetZ(index);
             }
         }
     }

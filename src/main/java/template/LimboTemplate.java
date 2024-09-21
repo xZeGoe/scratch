@@ -7,7 +7,7 @@ import net.minestom.scratch.network.NetworkContext;
 import net.minestom.scratch.registry.ScratchRegistryTools;
 import net.minestom.scratch.world.ImmutableChunkRepeatWorld;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.coordinate.ChunkRangeUtils;
+import net.minestom.server.coordinate.ChunkRange;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.GameMode;
@@ -26,6 +26,7 @@ import net.minestom.server.network.packet.server.login.LoginSuccessPacket;
 import net.minestom.server.network.packet.server.play.*;
 import net.minestom.server.network.packet.server.play.data.WorldPos;
 import net.minestom.server.network.packet.server.status.ResponsePacket;
+import net.minestom.server.network.player.GameProfile;
 import net.minestom.server.registry.DynamicRegistry;
 import net.minestom.server.world.DimensionType;
 
@@ -190,7 +191,8 @@ public final class LimboTemplate {
                 case ClientLoginStartPacket startPacket -> {
                     username = startPacket.username();
                     uuid = UUID.randomUUID();
-                    this.networkContext.write(new LoginSuccessPacket(startPacket.profileId(), startPacket.username(), 0, false));
+                    GameProfile gameProfile = new GameProfile(uuid, username);
+                    this.networkContext.write(new LoginSuccessPacket(gameProfile, false));
                 }
                 case ClientLoginAcknowledgedPacket ignored -> {
                     this.networkContext.write(ScratchRegistryTools.REGISTRY_PACKETS);
@@ -292,7 +294,7 @@ public final class LimboTemplate {
             this.networkContext.write(new UpdateViewDistancePacket(VIEW_DISTANCE));
             this.networkContext.write(new UpdateViewPositionPacket(position.chunkX(), position.chunkZ()));
 
-            ChunkRangeUtils.forChunksInRange(position.chunkX(), position.chunkZ(), VIEW_DISTANCE,
+            ChunkRange.chunksInRange(position.chunkX(), position.chunkZ(), VIEW_DISTANCE,
                     (x, z) -> networkContext.write(world.chunkPacket(x, z)));
 
             this.networkContext.write(new ChangeGameStatePacket(ChangeGameStatePacket.Reason.LEVEL_CHUNKS_LOAD_START, 0f));
