@@ -59,6 +59,7 @@ public final class TrackedWorld implements Block.Getter, Block.Setter {
         final byte[] data = NetworkBuffer.makeArray(networkBuffer -> {
             for (Section section : chunk.sections) {
                 networkBuffer.write(SHORT, (short) section.blocks.count());
+                networkBuffer.write(SHORT, (short) 0);
                 networkBuffer.write(Palette.BLOCK_SERIALIZER, section.blocks);
                 networkBuffer.write(biomeSerializer, section.biomes);
             }
@@ -91,7 +92,7 @@ public final class TrackedWorld implements Block.Getter, Block.Setter {
         final int chunkZ = z >> 4;
         final Chunk chunk = chunks.computeIfAbsent(chunkIndex(chunkX, chunkZ), i -> new Chunk(chunkX, chunkZ));
         final int blockIndex = chunkBlockIndex(x, y, z);
-        if (block.registry().isBlockEntity() || block.nbt() != null) chunk.blockEntities.put(blockIndex, block);
+        if (block.blockEntityType() != null || block.nbt() != null) chunk.blockEntities.put(blockIndex, block);
         else chunk.blockEntities.remove(blockIndex);
         final Section section = chunk.sections[(y >> 4) - minSection];
         section.blocks.set(x & 0xF, y & 0xF, z & 0xF, block.stateId());

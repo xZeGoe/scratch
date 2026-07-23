@@ -105,14 +105,10 @@ public interface ScratchFeature extends Consumer<ClientPacket> {
     record EntityInteract(Mapping mapping) implements ScratchFeature {
         @Override
         public void accept(ClientPacket packet) {
-            if (packet instanceof ClientInteractEntityPacket interactEntityPacket) {
-                final int targetId = interactEntityPacket.targetId();
-                final ClientInteractEntityPacket.Type type = interactEntityPacket.type();
-                if (type instanceof ClientInteractEntityPacket.Interact interact) {
-                    mapping.right(targetId);
-                } else if (type instanceof ClientInteractEntityPacket.Attack attack) {
-                    mapping.left(targetId);
-                }
+            if (packet instanceof ClientAttackPacket attackPacket) {
+                mapping.left(attackPacket.targetId());
+            } else if (packet instanceof ClientInteractEntityPacket interactPacket) {
+                mapping.right(interactPacket.targetId());
             }
         }
 

@@ -38,6 +38,7 @@ import net.minestom.server.network.packet.server.common.PingResponsePacket;
 import net.minestom.server.network.packet.server.configuration.FinishConfigurationPacket;
 import net.minestom.server.network.packet.server.login.LoginSuccessPacket;
 import net.minestom.server.network.packet.server.play.*;
+import net.minestom.server.network.packet.server.play.data.PlayerSpawnInfo;
 import net.minestom.server.network.packet.server.play.data.WorldPos;
 import net.minestom.server.network.packet.server.status.ResponsePacket;
 import net.minestom.server.network.player.GameProfile;
@@ -253,7 +254,7 @@ public final class PlayerSyncTemplate {
                     // TODO: remove random UUID, currently necessary to test with multiple players
                     this.playerInfo = new PlayerInfo(this, startPacket.username(), UUID.randomUUID());
                     GameProfile gameProfile = new GameProfile(playerInfo.uuid(), playerInfo.username());
-                    this.networkContext.write(new LoginSuccessPacket(gameProfile));
+                    this.networkContext.write(new LoginSuccessPacket(gameProfile, new UUID(0L, 0L)));
                 }
                 case ClientLoginAcknowledgedPacket ignored -> {
                     this.networkContext.write(ScratchRegistryTools.REGISTRY_PACKETS);
@@ -474,9 +475,10 @@ public final class PlayerSyncTemplate {
                     id, false, List.of(), 0,
                     8, 8,
                     false, true, false,
-                    dimensionId, dimensionKey.name(),
-                    0, gameMode, null, false, true,
-                    new WorldPos(dimensionKey.name(), Vec.ZERO), 0, 0, false);
+                    new PlayerSpawnInfo(dimensionId, dimensionKey.name(),
+                            0, gameMode, null, false, true,
+                            new WorldPos(dimensionKey.name(), Vec.ZERO), 0, 0),
+                    false, false);
             packets.add(joinGamePacket);
             packets.add(new SpawnPositionPacket(new WorldPos(dimensionKey.name(), position), 0, 0));
             packets.add(new PlayerPositionAndLookPacket(0, position, Vec.ZERO, position.yaw(), position.pitch(), (byte) 0));

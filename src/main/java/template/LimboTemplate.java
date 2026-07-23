@@ -24,6 +24,7 @@ import net.minestom.server.network.packet.server.common.PingResponsePacket;
 import net.minestom.server.network.packet.server.configuration.FinishConfigurationPacket;
 import net.minestom.server.network.packet.server.login.LoginSuccessPacket;
 import net.minestom.server.network.packet.server.play.*;
+import net.minestom.server.network.packet.server.play.data.PlayerSpawnInfo;
 import net.minestom.server.network.packet.server.play.data.WorldPos;
 import net.minestom.server.network.packet.server.status.ResponsePacket;
 import net.minestom.server.network.player.GameProfile;
@@ -194,7 +195,7 @@ public final class LimboTemplate {
                     username = startPacket.username();
                     uuid = UUID.randomUUID();
                     GameProfile gameProfile = new GameProfile(uuid, username);
-                    this.networkContext.write(new LoginSuccessPacket(gameProfile));
+                    this.networkContext.write(new LoginSuccessPacket(gameProfile, new UUID(0L, 0L)));
                 }
                 case ClientLoginAcknowledgedPacket ignored -> {
                     this.networkContext.write(ScratchRegistryTools.REGISTRY_PACKETS);
@@ -284,9 +285,10 @@ public final class LimboTemplate {
                     id, false, List.of(), 0,
                     VIEW_DISTANCE, VIEW_DISTANCE,
                     false, true, false,
-                    dimensionId, dimensionKey.name(),
-                    0, GameMode.CREATIVE, null, false, true,
-                    new WorldPos(dimensionKey.name(), Vec.ZERO), 0, 0, false));
+                    new PlayerSpawnInfo(dimensionId, dimensionKey.name(),
+                            0, GameMode.CREATIVE, null, false, true,
+                            new WorldPos(dimensionKey.name(), Vec.ZERO), 0, 0),
+                    false, false));
             this.networkContext.write(new SpawnPositionPacket(new WorldPos(dimensionKey.name(), position), 0, 0));
             this.networkContext.write(new PlayerPositionAndLookPacket(0, position, Vec.ZERO, position.yaw(), position.pitch(), (byte) 0));
             this.networkContext.write(new PlayerInfoUpdatePacket(EnumSet.of(PlayerInfoUpdatePacket.Action.ADD_PLAYER, PlayerInfoUpdatePacket.Action.UPDATE_LISTED),

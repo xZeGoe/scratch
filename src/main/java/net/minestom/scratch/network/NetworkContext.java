@@ -6,7 +6,6 @@ import net.minestom.server.network.ConnectionState;
 import net.minestom.server.network.NetworkBuffer;
 import net.minestom.server.network.packet.PacketParser;
 import net.minestom.server.network.packet.PacketReading;
-import net.minestom.server.network.packet.PacketRegistry.PacketInfo;
 import net.minestom.server.network.packet.PacketVanilla;
 import net.minestom.server.network.packet.PacketWriting;
 import net.minestom.server.network.packet.client.ClientPacket;
@@ -174,8 +173,7 @@ public sealed interface NetworkContext {
         switch (packet) {
             case NetworkContext.Packet.PacketIdPair packetPair -> {
                 final ServerPacket packetLoop = packetPair.packet;
-                final PacketInfo<ServerPacket> info = parser.stateRegistry(state).packetInfo(packetLoop.getClass());
-                PacketWriting.writeFramedPacket(buffer, info, packetLoop, 0);
+                PacketWriting.writeFramedPacket(buffer, parser, state, packetLoop, 0);
             }
             case NetworkContext.Packet.PlayList playList -> {
                 final Collection<ServerPacket.Play> packets = playList.packets();
@@ -183,8 +181,7 @@ public sealed interface NetworkContext {
                 int index = 0;
                 for (ServerPacket.Play packetLoop : packets) {
                     if (exception.length > 0 && Arrays.binarySearch(exception, index++) >= 0) continue;
-                    final PacketInfo<ServerPacket> info = parser.stateRegistry(state).packetInfo(packetLoop.getClass());
-                    PacketWriting.writeFramedPacket(buffer, info, packetLoop, 0);
+                    PacketWriting.writeFramedPacket(buffer, parser, state, packetLoop, 0);
                 }
             }
         }

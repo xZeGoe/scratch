@@ -59,6 +59,7 @@ public final class PaletteWorld implements Block.Getter, Block.Setter {
         final byte[] data = NetworkBuffer.makeArray(networkBuffer -> {
             for (Section section : chunk.sections) {
                 networkBuffer.write(SHORT, (short) section.blocks.count());
+                networkBuffer.write(SHORT, (short) 0);
                 networkBuffer.write(Palette.BLOCK_SERIALIZER, section.blocks);
                 networkBuffer.write(biomeSerializer, section.biomes);
             }

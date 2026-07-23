@@ -50,6 +50,7 @@ import net.minestom.server.network.packet.server.common.PingResponsePacket;
 import net.minestom.server.network.packet.server.configuration.FinishConfigurationPacket;
 import net.minestom.server.network.packet.server.login.LoginSuccessPacket;
 import net.minestom.server.network.packet.server.play.*;
+import net.minestom.server.network.packet.server.play.data.PlayerSpawnInfo;
 import net.minestom.server.network.packet.server.play.data.WorldPos;
 import net.minestom.server.network.packet.server.status.ResponsePacket;
 import net.minestom.server.network.player.GameProfile;
@@ -316,7 +317,7 @@ public final class SurvivalTemplate {
                     // TODO: remove random UUID, currently necessary to test with multiple players
                     this.playerInfo = new PlayerInfo(this, startPacket.username(), UUID.randomUUID());
                     GameProfile gameProfile = new GameProfile(playerInfo.uuid(), playerInfo.username());
-                    this.networkContext.write(new LoginSuccessPacket(gameProfile));
+                    this.networkContext.write(new LoginSuccessPacket(gameProfile, new UUID(0L, 0L)));
                 }
                 case ClientLoginAcknowledgedPacket ignored -> {
                     this.networkContext.write(ScratchRegistryTools.REGISTRY_PACKETS);
@@ -904,8 +905,10 @@ public final class SurvivalTemplate {
             final RegistryKey<DimensionType> dimensionKey = ScratchRegistryTools.DIMENSION_TYPE.getKey(dimension);
             final int dimensionId = ScratchRegistryTools.DIMENSION_TYPE.getId(dimensionKey);
 
-            RespawnPacket respawnPacket = new RespawnPacket(dimensionId, dimensionKey.name(), 0, gameMode, gameMode,
-                    false, false, null, 0, 0, (byte) RespawnPacket.COPY_METADATA);
+            RespawnPacket respawnPacket = new RespawnPacket(
+                    new PlayerSpawnInfo(dimensionId, dimensionKey.name(), 0, gameMode, gameMode,
+                            false, false, null, 0, 0),
+                    (byte) RespawnPacket.COPY_METADATA);
             sendPacket(respawnPacket);
             sendPacket(new ChangeGameStatePacket(ChangeGameStatePacket.Reason.LEVEL_CHUNKS_LOAD_START, 0));
             ChunkRange.chunksInRange(position.chunkX(), position.chunkZ(), VIEW_DISTANCE,
@@ -930,9 +933,10 @@ public final class SurvivalTemplate {
                     id, false, List.of(), 0,
                     VIEW_DISTANCE, VIEW_DISTANCE,
                     false, true, false,
-                    dimensionId, dimensionKey.name(),
-                    0, gameMode, null, false, true,
-                    new WorldPos(dimensionKey.name(), Vec.ZERO), 0, 0, false);
+                    new PlayerSpawnInfo(dimensionId, dimensionKey.name(),
+                            0, gameMode, null, false, true,
+                            new WorldPos(dimensionKey.name(), Vec.ZERO), 0, 0),
+                    false, false);
             packets.add(joinGamePacket);
             packets.add(commands.generatePacket());
 //            packets.add(new DeclareRecipesPacket(recipes));
