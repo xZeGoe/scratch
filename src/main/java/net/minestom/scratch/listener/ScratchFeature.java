@@ -77,7 +77,7 @@ public interface ScratchFeature extends Consumer<ClientPacket> {
             if (packet instanceof ClientPlayerPositionAndRotationPacket positionAndRotationPacket) {
                 position = positionAndRotationPacket.position();
             } else if (packet instanceof ClientPlayerPositionPacket positionPacket) {
-                position = Pos.fromPoint(positionPacket.position());
+                position = positionPacket.position().asPos();
             }
             if (position == null || position.sameChunk(oldPosition)) return;
             final int oldChunkX = oldPosition.chunkX();

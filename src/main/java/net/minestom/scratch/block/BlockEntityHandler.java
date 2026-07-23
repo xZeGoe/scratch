@@ -16,21 +16,21 @@ public final class BlockEntityHandler<W, A> {
     }
 
     public void place(A actor, W world, Point point, Block block) {
-        final int id = block.registry().id();
-        final Entry entry = entries.get(id);
+        final int id = block.id();
+        final Entry<W, A> entry = entries.get(id);
         if (entry == null) return;
-        final Action action = (Action) entry.supplier.apply(world, point);
+        final Action<A> action = entry.supplier.apply(world, point);
         blocks.put(point, action);
     }
 
     public void brk(A actor, Point point) {
-        final Action action = blocks.remove(point);
+        final Action<A> action = blocks.remove(point);
         if (action == null) return;
         action.onBreak(actor);
     }
 
     public void interact(A actor, Point point) {
-        final Action action = blocks.get(point);
+        final Action<A> action = blocks.get(point);
         if (action == null) return;
         action.onInteract(actor);
     }

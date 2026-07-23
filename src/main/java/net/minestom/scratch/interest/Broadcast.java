@@ -4,7 +4,6 @@ import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minestom.server.coordinate.ChunkRange;
-import net.minestom.server.coordinate.CoordConversion;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.network.packet.server.ServerPacket;
 
@@ -175,6 +174,7 @@ public final class Broadcast {
                 }
                 broadcaster.clear();
             }
+            this.chunks.values().removeIf(Chunk::isEmpty);
             this.entriesChanged.clear();
         }
 
@@ -242,15 +242,16 @@ public final class Broadcast {
         }
 
         private static final class Chunk {
-            private final int x, z;
             private final IntSet viewers = new IntOpenHashSet();
             private final IntSet viewersReceivers = new IntOpenHashSet();
             private final IntSet receivers = new IntOpenHashSet();
             private final PacketStore broadcaster = new PacketStore();
 
             public Chunk(long index) {
-                this.x = CoordConversion.chunkIndexGetX(index);
-                this.z = CoordConversion.chunkIndexGetZ(index);
+            }
+
+            private boolean isEmpty() {
+                return viewers.isEmpty() && viewersReceivers.isEmpty() && receivers.isEmpty() && broadcaster.isEmpty();
             }
         }
     }
@@ -277,6 +278,10 @@ public final class Broadcast {
             IntArrayList list = PacketStore.this.entityIdMap.get(id);
             if (list == null) return IntArrays.EMPTY_ARRAY;
             return list.toIntArray();
+        }
+
+        public boolean isEmpty() {
+            return this.packets.isEmpty();
         }
 
         public void clear() {

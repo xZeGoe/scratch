@@ -13,14 +13,15 @@ public final class PacketWaiter {
     private final Map<Class<?>, List<Consumer<?>>> consumers = new HashMap<>();
 
     public void consume(ServerPacket.Play packet) {
-        consume(packet.getClass(), packet);
+        consumePacket(packet);
     }
 
     public void consume(ClientPacket packet) {
-        consume(packet.getClass(), packet);
+        consumePacket(packet);
     }
 
-    private void consume(Class<?> packetClass, Object packet) {
+    @SuppressWarnings("unchecked")
+    private void consumePacket(Object packet) {
         final var type = packet.getClass();
         final var list = consumers.remove(type);
         if (list == null) return;

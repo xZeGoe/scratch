@@ -46,6 +46,7 @@ public final class MetaHolder {
         this.consumer.accept(metaDataPacket());
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T get(MetadataDef.@NotNull Entry<T> entry) {
         final int id = entry.index();
         final Metadata.Entry<?> value = this.entries.get(id);

@@ -7,6 +7,7 @@ import net.minestom.server.inventory.InventoryType;
 import net.minestom.server.inventory.click.Click;
 import net.minestom.server.inventory.click.ClickPreprocessor;
 import net.minestom.server.item.ItemStack;
+import net.minestom.scratch.registry.ScratchRegistryTools;
 import net.minestom.server.network.packet.client.play.*;
 import net.minestom.server.network.packet.server.ServerPacket;
 import net.minestom.server.network.packet.server.play.*;
@@ -143,7 +144,7 @@ public final class InventoryHolder {
             }
         }
 
-        if (!ItemStack.Hash.of(cursor).equals(packet.clickedItem())) {
+        if (!ItemStack.Hash.of(cursor, ScratchRegistryTools.registries()).equals(packet.clickedItem())) {
             selfConsumer.accept(new SetCursorItemPacket(cursor));
         }
     }
@@ -471,7 +472,7 @@ public final class InventoryHolder {
         };
 
         final ItemStack item = inventory[slot];
-        final EquipmentSlot equipmentSlot = item.material().registry().equipmentSlot();
+        final EquipmentSlot equipmentSlot = item.material().equipmentSlot();
         if (equipmentSlot != null && equipmentSlot.isArmor()) {
             final int internalSlot = equipmentSlot(equipmentSlot);
             // Swap the armor piece with the one in the hand

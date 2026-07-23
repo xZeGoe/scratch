@@ -297,11 +297,11 @@ public final class PlayerSyncTemplate {
                     },
                     () -> List.of(new DestroyEntitiesPacket(id)));
 
-            this.aerodynamics = new Aerodynamics(type.registry().acceleration(), 0.91, 1 - type.registry().drag());
+            this.aerodynamics = new Aerodynamics(type.acceleration(), 0.91, 1 - type.drag());
         }
 
         void tick() {
-            PhysicsResult physicsResult = PhysicsUtils.simulateMovement(position, velocity, type.registry().boundingBox(),
+            PhysicsResult physicsResult = PhysicsUtils.simulateMovement(position, velocity, type.boundingBox(),
                     instance.worldBorder, instance.blockHolder, aerodynamics, false, true, onGround, false, null);
 
             this.position = physicsResult.newPosition();

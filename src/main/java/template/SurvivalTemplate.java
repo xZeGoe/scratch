@@ -366,7 +366,7 @@ public final class SurvivalTemplate {
             for (ItemStack item : container.inventory()) {
                 if (item.isAir()) continue;
                 // Drop item with random velocity
-                ItemEntity itemEntity = new ItemEntity(player.instance, Pos.fromPoint(point).add(0.5, 0.5, 0.5), item);
+                ItemEntity itemEntity = new ItemEntity(player.instance, point.asPos().add(0.5, 0.5, 0.5), item);
                 itemEntity.velocity = new Vec(Math.random() * 0.1 - 0.05, Math.random() * 0.1 - 0.05, Math.random() * 0.1 - 0.05);
                 SurvivalTemplate.this.items.put(itemEntity.id, itemEntity);
             }
@@ -422,7 +422,7 @@ public final class SurvivalTemplate {
                 ItemStack item = container.inventory()[i];
                 if (item.isAir()) continue;
                 // Drop item with random velocity
-                ItemEntity itemEntity = new ItemEntity(instance, Pos.fromPoint(point).add(0.5, 1, 0.5), item);
+                ItemEntity itemEntity = new ItemEntity(instance, point.asPos().add(0.5, 1, 0.5), item);
                 itemEntity.velocity = new Vec(Math.random() * 0.1 - 0.05, 0, Math.random() * 0.1 - 0.05);
                 SurvivalTemplate.this.items.put(itemEntity.id, itemEntity);
             }
@@ -445,7 +445,7 @@ public final class SurvivalTemplate {
                 ItemStack item = container.inventory()[i];
                 if (item.isAir()) continue;
                 // Drop item with random velocity
-                ItemEntity itemEntity = new ItemEntity(instance, Pos.fromPoint(point).add(0.5, 1, 0.5), item);
+                ItemEntity itemEntity = new ItemEntity(instance, point.asPos().add(0.5, 1, 0.5), item);
                 itemEntity.velocity = new Vec(Math.random() * 0.1 - 0.05, 0, Math.random() * 0.1 - 0.05);
                 SurvivalTemplate.this.items.put(itemEntity.id, itemEntity);
             }
@@ -492,11 +492,11 @@ public final class SurvivalTemplate {
 
             this.synchronizerEntry = instance.synchronizer.makeEntry(id, position, initPackets, destroyPackets);
             this.metaHolder.set(MetadataDef.ItemEntity.ITEM, itemStack);
-            this.aerodynamics = new Aerodynamics(type.registry().acceleration(), 0.98, 1 - type.registry().drag());
+            this.aerodynamics = new Aerodynamics(type.acceleration(), 0.98, 1 - type.drag());
         }
 
         boolean tick() {
-            PhysicsResult physicsResult = PhysicsUtils.simulateMovement(position, velocity, type.registry().boundingBox(),
+            PhysicsResult physicsResult = PhysicsUtils.simulateMovement(position, velocity, type.boundingBox(),
                     instance.worldBorder, instance.blockHolder, aerodynamics,
                     false, true, onGround, false, null);
 
@@ -510,7 +510,7 @@ public final class SurvivalTemplate {
             this.tickAlive++;
             if (tickAlive >= PICKUP_DELAY) {
                 for (Player player : players.values()) {
-                    if (player.position.distance(position) < type.registry().boundingBox().width() + 1) {
+                    if (player.position.distance(position) < type.boundingBox().width() + 1) {
                         if (!player.inventoryHolder.canAddItem(itemStack)) continue;
                         player.inventoryHolder.addItem(itemStack);
                         player.sendPacket(player.inventoryHolder.itemsPacket());
@@ -573,7 +573,7 @@ public final class SurvivalTemplate {
             this.instance = instance;
             this.position = position;
             this.synchronizerEntry = instance.synchronizer.makeEntry(id, position, initPackets, destroyPackets);
-            this.aerodynamics = new Aerodynamics(type.registry().acceleration(), 0.91, 1 - type.registry().drag());
+            this.aerodynamics = new Aerodynamics(type.acceleration(), 0.91, 1 - type.drag());
         }
 
         boolean tick() {
@@ -583,7 +583,7 @@ public final class SurvivalTemplate {
                 this.velocity = pathVelocity;
                 this.position = position.withDirection(pathVelocity);
             }
-            PhysicsResult physicsResult = PhysicsUtils.simulateMovement(position, velocity, type.registry().boundingBox(),
+            PhysicsResult physicsResult = PhysicsUtils.simulateMovement(position, velocity, type.boundingBox(),
                     instance.worldBorder, instance.blockHolder, aerodynamics,
                     false, true, onGround, false, null);
 
@@ -645,7 +645,7 @@ public final class SurvivalTemplate {
         void moveTo(Point point) {
             this.path = PathGenerator.generate(instance.blockHolder, position, point,
                     0.1, 50, 20,
-                    type.registry().boundingBox(), true, generator, () -> System.out.println("finished"));
+                    type.boundingBox(), true, generator, () -> System.out.println("finished"));
         }
 
         private void unregister() {
@@ -761,8 +761,7 @@ public final class SurvivalTemplate {
                                 sendMessage(Component.text("No item in hand"));
                                 return;
                             }
-                            final CompoundBinaryTag data = handItem.toItemNBT();
-                            ;
+                            final CompoundBinaryTag data = handItem.toItemNBT(ScratchRegistryTools.registries());
                             try {
                                 final String snbt = MinestomAdventure.tagStringIO().asString(data);
                                 final DataComponentMap components = handItem.material().prototype();
@@ -1099,7 +1098,7 @@ public final class SurvivalTemplate {
                     case BlockInteractionHandler.Action.PlaceBlock placeBlock -> {
                         final Point point = placeBlock.blockPosition();
                         final ItemStack item = inventoryHolder.getHandItem(placeBlock.hand());
-                        final Block block = item.material().registry().block();
+                        final Block block = item.material().block();
                         if (block == null) return;
                         instance.blockEntityHandler.place(this, instance, point, block);
                         instance.blockHolder.setBlock(point, block);

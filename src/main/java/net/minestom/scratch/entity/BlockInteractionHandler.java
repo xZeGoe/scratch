@@ -39,7 +39,7 @@ public final class BlockInteractionHandler {
     }
 
     public List<Action> consume(ClientPlayerBlockPlacementPacket packet, ItemStack handItem) {
-        final boolean handBlock = handItem.material().registry().block() != null;
+        final boolean handBlock = handItem.material().block() != null;
         final Point blockPosition = packet.blockPosition();
         if (handBlock) {
             final BlockFace blockFace = packet.blockFace();
